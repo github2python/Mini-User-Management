@@ -13,8 +13,25 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // Middleware
+// CORS configuration - allow multiple origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'https://mini-user-management-seven.vercel.app',
+  'https://mini-user-management-seven.vercel.app/'
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now, can be restricted later
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -50,6 +67,43 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Root route - API information
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'User Management API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      apiDocs: '/api-docs',
+      auth: {
+        signup: 'POST /api/auth/signup',
+        login: 'POST /api/auth/login',
+        me: 'GET /api/auth/me',
+        logout: 'POST /api/auth/logout'
+      },
+      users: {
+        profile: 'GET /api/users/profile',
+        updateProfile: 'PUT /api/users/profile',
+        changePassword: 'PUT /api/users/change-password'
+      },
+      admin: {
+        getAllUsers: 'GET /api/admin/users',
+        activateUser: 'PUT /api/admin/users/:id/activate',
+        deactivateUser: 'PUT /api/admin/users/:id/deactivate'
+      },
+      tasks: {
+        create: 'POST /api/tasks',
+        getAll: 'GET /api/tasks',
+        getById: 'GET /api/tasks/:id',
+        update: 'PUT /api/tasks/:id',
+        delete: 'DELETE /api/tasks/:id',
+        regenerateAI: 'POST /api/tasks/:id/regenerate-ai'
+      }
+    }
+  });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
