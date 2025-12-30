@@ -626,17 +626,17 @@ docker run -p 3000:80 user-management-frontend
 
 **Frontend (Vercel):**
 ```
-
+https://mini-user-management-seven.vercel.app
 ```
 
 **Backend API (Render):**
 ```
-
+https://mini-user-management-oig7.onrender.com
 ```
 
 **API Documentation (Swagger):**
 ```
-
+https://mini-user-management-oig7.onrender.com/api-docs
 ```
 
 **Database:**
